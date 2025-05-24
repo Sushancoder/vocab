@@ -57,8 +57,7 @@ export default function VocabularyApp() {
     // Save newwords to localstorage
     const newUsedWords = (newword) => {
         if (typeof window === 'undefined') return;
-        
-        
+                
         try {
             window.localStorage.setItem('usedWords', JSON.stringify(updatedWords));
         } catch (e) {
