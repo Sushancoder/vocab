@@ -4,6 +4,16 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function VocabularyApp() {
+    const [isClient, setIsClient] = useState(false);
+    
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+    
+    if (!isClient) {
+        return null; // or a loading spinner
+    }
+    
     const [showWord, setShowWord] = useState(false);
     const [usedWords, setUsedWords] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
@@ -27,26 +37,32 @@ export default function VocabularyApp() {
 
     // Initialize from localStorage on client side only
     useEffect(() => {
-        // This code will only run on the client side
-        const storedApiKey = localStorage.getItem('apiKey');
-        if (storedApiKey) {
-            setApiKey(storedApiKey);
-        }
+        if (typeof window !== 'undefined') {
+            const storedApiKey = window.localStorage.getItem('apiKey');
+            if (storedApiKey) {
+                setApiKey(storedApiKey);
+            }
 
-        const storedUsedWords = localStorage.getItem('usedWords');
-        if (storedUsedWords) {
-            setUsedWords(JSON.parse(storedUsedWords));
+            const storedUsedWords = window.localStorage.getItem('usedWords');
+            if (storedUsedWords) {
+                try {
+                    setUsedWords(JSON.parse(storedUsedWords));
+                } catch (e) {
+                    console.error('Failed to parse usedWords from localStorage', e);
+                }
+            }
         }
     }, []);
 
     // Save newwords to localstorage
     const newUsedWords = (newword) => {
-        if (usedWords) {
-            setUsedWords([...usedWords, newword])
-            localStorage.setItem("usedWords", JSON.stringify([...usedWords, newword]))
-        } else {
-            setUsedWords([newword])
-            localStorage.setItem("usedWords", JSON.stringify([newword]))
+        if (typeof window === 'undefined') return;
+        
+        
+        try {
+            window.localStorage.setItem('usedWords', JSON.stringify(updatedWords));
+        } catch (e) {
+            console.error('Failed to save to localStorage', e);
         }
     }
 
