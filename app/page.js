@@ -9,7 +9,7 @@ export default function VocabularyApp() {
     const [selectedOption, setSelectedOption] = useState(null);
     const [showExplanation, setShowExplanation] = useState(false);
     const [isSending, setIsSending] = useState(false);
-    const [apiKey, setApiKey] = useState(localStorage.getItem("apiKey") || '');
+    const [apiKey, setApiKey] = useState('');
     const [status, setStatus] = useState();
     // Mock data - in a real app, this would come from an API
     const [wordData, setWordData] = useState({
@@ -25,9 +25,14 @@ export default function VocabularyApp() {
         imageGen: " "
     });
 
-
-    // Get usedwords from localstorage
+    // Initialize from localStorage on client side only
     useEffect(() => {
+        // This code will only run on the client side
+        const storedApiKey = localStorage.getItem('apiKey');
+        if (storedApiKey) {
+            setApiKey(storedApiKey);
+        }
+
         const storedUsedWords = localStorage.getItem('usedWords');
         if (storedUsedWords) {
             setUsedWords(JSON.parse(storedUsedWords));
