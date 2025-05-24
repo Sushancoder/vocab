@@ -28,7 +28,7 @@ import 'dotenv/config'; // To access the env. Var (It works)
 
 // Gemini Text Response Function:
 
-async function geminiText(exclusions) {
+async function geminiText(exclusions, apiKey) {
     let responseText = '';
 
     let format = `Generate a new random word with its details in the following JSON format:
@@ -48,12 +48,12 @@ async function geminiText(exclusions) {
             And don't provide any of these words:
             ${exclusions}
     `
-    if (!process.env.GEMINI_API_KEY) {
+    if (!apiKey) {
         throw new Error('GEMINI_API_KEY is missing');
     }
 
     const ai = new GoogleGenAI({
-        apiKey: process.env.GEMINI_API_KEY,
+        apiKey: apiKey,
     });
     const tools = [
         // { googleSearch: `${format}` },
@@ -102,7 +102,7 @@ export async function POST(req) {
     try {
         const body = await req.json();
         // resend();
-        const wordData = await geminiText(body.usedWords);
+        const wordData = await geminiText(body.usedWords, body.apiKey);
         console.log(wordData)
 
         return NextResponse.json({

@@ -18,13 +18,13 @@ import 'dotenv/config';
 // }
 
 
-async function geminiImage(prompt) {
-    if (!process.env.GEMINI_API_KEY) {
+async function geminiImage(prompt, apiKey) {
+    if (!apiKey) {
         throw new Error('GEMINI_API_KEY is missing');
     }
 
     const ai = new GoogleGenAI({
-        apiKey: process.env.GEMINI_API_KEY,
+        apiKey: apiKey,
     });
     const config = {
         responseModalities: [
@@ -39,7 +39,7 @@ async function geminiImage(prompt) {
             role: 'user',
             parts: [
                 {
-                    text: `${prompt}`,
+                    text: `Generate the described image: ${prompt}`,
                 },
             ],
         },
@@ -75,9 +75,10 @@ export async function GET(req) {
     try {
         const { searchParams } = req.nextUrl;
         const prompt = searchParams.get('prompt');
+        const apiKey = searchParams.get('apiKey');
 
         // console.log(prompt)
-        const image = await geminiImage(prompt)
+        const image = await geminiImage(prompt, apiKey)
 
         return NextResponse.json({
             success: true,
