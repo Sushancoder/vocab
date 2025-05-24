@@ -14,7 +14,7 @@ A modern web application that helps you learn new words with visual aids and mne
 
 - Node.js (v14 or later)
 - npm or yarn
-- Google Gemini API key
+- Google Gemini API key(Using Google's AI Studio, It's free)
 
 ## Getting Started
 
@@ -29,11 +29,6 @@ A modern web application that helps you learn new words with visual aids and mne
    npm install
    # or
    yarn install
-   ```
-
-3. Create a `.env.local` file in the root directory and add your API key:
-   ```
-   GEMINI_API_KEY=your_gemini_api_key_here
    ```
 
 4. Run the development server:
