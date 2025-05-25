@@ -4,16 +4,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function VocabularyApp() {
+    // State for client-side rendering
     const [isClient, setIsClient] = useState(false);
     
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-    
-    if (!isClient) {
-        return null; // or a loading spinner
-    }
-    
+    // App state
     const [showWord, setShowWord] = useState(false);
     const [usedWords, setUsedWords] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
@@ -21,7 +15,8 @@ export default function VocabularyApp() {
     const [isSending, setIsSending] = useState(false);
     const [apiKey, setApiKey] = useState('');
     const [status, setStatus] = useState();
-    // Mock data - in a real app, this would come from an API
+    
+    // Word data state
     const [wordData, setWordData] = useState({
         word: " ",
         definition: " ",
@@ -29,35 +24,48 @@ export default function VocabularyApp() {
         synonyms: [" ", " ", " "],
         correctSynonym: " ",
         etymology: " ",
-        examples: [" ", " ",],
+        examples: [" ", " "],
         origin: " ",
         mnemonic: " ",
         imageGen: " "
     });
 
-    // Initialize from localStorage on client side only
+    // Set client flag and initialize from localStorage
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedApiKey = window.localStorage.getItem('apiKey');
-            if (storedApiKey) {
-                setApiKey(storedApiKey);
-            }
+        setIsClient(true);
+        
+        // Only run in browser
+        if (typeof window === 'undefined') return;
+        
+        // Initialize API key from localStorage
+        const storedApiKey = window.localStorage.getItem('apiKey');
+        if (storedApiKey) {
+            setApiKey(storedApiKey);
+        }
 
-            const storedUsedWords = window.localStorage.getItem('usedWords');
-            if (storedUsedWords) {
-                try {
-                    setUsedWords(JSON.parse(storedUsedWords));
-                } catch (e) {
-                    console.error('Failed to parse usedWords from localStorage', e);
-                }
+        // Initialize used words from localStorage
+        const storedUsedWords = window.localStorage.getItem('usedWords');
+        if (storedUsedWords) {
+            try {
+                setUsedWords(JSON.parse(storedUsedWords));
+            } catch (e) {
+                console.error('Failed to parse usedWords from localStorage', e);
             }
         }
     }, []);
+    
+    // Show loading state until client-side initialization is complete
+    if (!isClient) {
+        return null; // or a loading spinner
+    }
 
-    // Save newwords to localstorage
+    // Save new words to localstorage
     const newUsedWords = (newword) => {
         if (typeof window === 'undefined') return;
-                
+        
+        const updatedWords = usedWords ? [...usedWords, newword] : [newword];
+        setUsedWords(updatedWords);
+        
         try {
             window.localStorage.setItem('usedWords', JSON.stringify(updatedWords));
         } catch (e) {
