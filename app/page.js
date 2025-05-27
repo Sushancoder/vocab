@@ -6,7 +6,7 @@ import Image from 'next/image';
 export default function VocabularyApp() {
     // State for client-side rendering
     const [isClient, setIsClient] = useState(false);
-    
+
     // App state
     const [showWord, setShowWord] = useState(false);
     const [usedWords, setUsedWords] = useState([]);
@@ -15,7 +15,8 @@ export default function VocabularyApp() {
     const [isSending, setIsSending] = useState(false);
     const [apiKey, setApiKey] = useState('');
     const [status, setStatus] = useState();
-    
+    const [showWords, setShowWords] = useState(false);
+
     // Word data state
     const [wordData, setWordData] = useState({
         word: " ",
@@ -33,10 +34,10 @@ export default function VocabularyApp() {
     // Set client flag and initialize from localStorage
     useEffect(() => {
         setIsClient(true);
-        
+
         // Only run in browser
         if (typeof window === 'undefined') return;
-        
+
         // Initialize API key from localStorage
         const storedApiKey = window.localStorage.getItem('apiKey');
         if (storedApiKey) {
@@ -53,7 +54,7 @@ export default function VocabularyApp() {
             }
         }
     }, []);
-    
+
     // Show loading state until client-side initialization is complete
     if (!isClient) {
         return null; // or a loading spinner
@@ -62,10 +63,10 @@ export default function VocabularyApp() {
     // Save new words to localstorage
     const newUsedWords = (newword) => {
         if (typeof window === 'undefined') return;
-        
+
         const updatedWords = usedWords ? [...usedWords, newword] : [newword];
         setUsedWords(updatedWords);
-        
+
         try {
             window.localStorage.setItem('usedWords', JSON.stringify(updatedWords));
         } catch (e) {
@@ -74,7 +75,7 @@ export default function VocabularyApp() {
     }
 
 
-    const handleGetWord = async () => {
+    const handleGetWord = async (type) => {
         try {
             setStatus({ type: 'info', message: 'Getting Word...' });
 
@@ -83,7 +84,7 @@ export default function VocabularyApp() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ usedWords, apiKey}),
+                body: JSON.stringify({ usedWords, apiKey, type }),
             });
             const data = await response.json();
 
@@ -95,7 +96,9 @@ export default function VocabularyApp() {
 
                 const wordDataReceived = data.data[0]
                 setWordData(wordDataReceived);
-                newUsedWords(wordDataReceived.word)
+                if (type == "random123") {
+                    newUsedWords(wordDataReceived.word)
+                }
 
                 return wordDataReceived;
             } else {
@@ -112,34 +115,61 @@ export default function VocabularyApp() {
 
 
     const getImage = async () => {
-        try {
-            const response = await fetch(`/api/imaginer?prompt=${wordData.imageGen}&apiKey=${apiKey}`);
-            const data = await response.json();
+        if (!wordData?.imageGen) {
+            console.error('No image generation prompt available');
+            setStatus({
+                type: 'error',
+                message: 'No image generation data available for this word'
+            });
+            return null;
+        }
 
-            if (response.ok) {
-                setWordData({
-                    ...wordData, imageUrl: data.image
-                });
-                return data;
-            } else {
-                throw new Error(data.error || 'Failed to get image');
+        try {
+            const response = await fetch(`/api/imaginer?prompt=${encodeURIComponent(wordData.imageGen)}&apiKey=${encodeURIComponent(apiKey)}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to get image');
             }
+            
+            const data = await response.json();
+            
+            setWordData(prev => ({
+                ...prev,
+                imageUrl: data.image
+            }));
+            return data;
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error fetching image:', error);
             setStatus({
                 type: 'error',
                 message: error.message || 'An error occurred while getting the image'
             });
+            return null;
         }
     }
 
-    const handleNewWord = async () => {
+    const handleNewWord = async (typeOfWord) => {
+        if (isSending) return; // Prevent multiple clicks
+        
         setIsSending(true);
-        await handleGetWord();
-        setIsSending(false);
-        setShowWord(true);
-        setSelectedOption(null);
         setShowExplanation(false);
+        setSelectedOption(null);
+        
+        try {
+            const success = await handleGetWord(typeOfWord);
+            if (success) {
+                setShowWord(true);
+            }
+        } catch (error) {
+            console.error('Error in handleNewWord:', error);
+            setStatus({
+                type: 'error',
+                message: error.message || 'Failed to load word. Please try again.'
+            });
+        } finally {
+            setIsSending(false);
+        }
     };
 
     const handleOptionSelect = (option) => {
@@ -152,7 +182,30 @@ export default function VocabularyApp() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
             <div className="max-w-2xl mx-auto">
-                <h1 className="text-3xl font-bold text-center text-blue-800 mb-8">Vocabulary Builder</h1>
+                <div className="flex items-center justify-between">
+                    <div className="text-3xl font-bold text-center text-blue-800 mb-8 flex-grow">Vocabulary Builder</div>
+
+                    <div className="text-xl font-bold text-center text-gray-600 mb-8 relative rounded-2xl p-2 cursor-pointer"
+                        onMouseEnter={() => setShowWords(true)}
+                        onClick={() => setShowWords(!showWords)}
+                        onMouseLeave={() => setShowWords(false)}>
+                        •••
+                        <div className={`absolute top-10 right-0 h-full rounded-lg text-black bg-gray-200 w-64 z-30 ${showWords ? 'block' : 'hidden'} ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`} >
+                            {/* All learnt words */}
+                            <div className="p-3 bg-white shadow-gray-400 rounded-t-lg text-xs font-thin text-black cursor-default">
+                                Click the word to know it's details
+                            </div>
+                            {usedWords.map((word, index) => (
+                                <div key={index} className={`p-3 bg-white cursor-pointer hover:bg-gray-100 shadow-lg shadow-gray-400 ${index === usedWords.length - 1 ? 'rounded-b-lg' : ''}`}
+                                    onClick={() => handleNewWord(word)}>
+                                    <p className="font-semibold">{word}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+
 
                 <div className="mb-8 p-4 bg-white rounded-lg shadow-md">
                     {localStorage.getItem("apiKey") ? (
@@ -161,7 +214,7 @@ export default function VocabularyApp() {
                                 <span className="w-3 h-3 rounded-full bg-green-500 mr-2"></span>
                                 <span className="text-gray-700">API Key is saved</span>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => {
                                     localStorage.removeItem("apiKey");
                                     setApiKey('');
@@ -174,14 +227,14 @@ export default function VocabularyApp() {
                     ) : (
                         <div className="space-y-3">
                             <div className="flex flex-col sm:flex-row gap-2">
-                                <input 
+                                <input
                                     type={apiKey.length > 0 ? 'password' : 'text'}
-                                    value={apiKey} 
-                                    onChange={(e) => setApiKey(e.target.value)} 
+                                    value={apiKey}
+                                    onChange={(e) => setApiKey(e.target.value)}
                                     placeholder="Enter your API Key"
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black" 
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black"
                                 />
-                                <button 
+                                <button
                                     onClick={() => {
                                         if (apiKey.trim()) {
                                             localStorage.setItem("apiKey", apiKey);
@@ -200,16 +253,22 @@ export default function VocabularyApp() {
                         </div>
                     )}
                 </div>
-                
+
                 <div className="text-center mb-8">
                     <button
-                        onClick={handleNewWord}
+                        onClick={() => handleNewWord("random123")}
                         disabled={isSending}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+                        className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 ${isSending ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {showWord ? 'Get Another Word' : 'Get New Word'}
                     </button>
                 </div>
+
+                {
+                    isSending ? <div className="flex items-center justify-center h-12 text-black">
+                        <p>Loading...</p>
+                    </div> : null
+                }
 
                 {showWord && (
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fade-in">
@@ -240,7 +299,7 @@ export default function VocabularyApp() {
                                         <p className="text-gray-700">
                                             <span className="font-semibold">Correct Answer:</span> {wordData.correctSynonym}
                                         </p>
-                                        
+
 
                                     </div>
                                     <p className="text-gray-700">

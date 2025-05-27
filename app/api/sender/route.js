@@ -28,10 +28,12 @@ import 'dotenv/config'; // To access the env. Var (It works)
 
 // Gemini Text Response Function:
 
-async function geminiText(exclusions, apiKey) {
+// certain: Help me understand the word "Given" by providing its details
+
+async function geminiText(exclusions, apiKey, type) {
     let responseText = '';
 
-    let format = `Generate a new random word with its details in the following JSON format:
+    let format = `${type} in the following JSON format:
             {
             "word": "The word",
             "definition": "Clear and coherent definition, 2 definitions distincted with or.",
@@ -42,7 +44,7 @@ async function geminiText(exclusions, apiKey) {
             "examples": ["Example1", "Example2", "Example3"],
             "origin": "Historical origin and first known use",
             "mnemonic": "A helpful mnemonic to remember the word",
-            "imageGen": "A prompt with proper context to generate the best possible related image to help learn the word. Relate it to the previous mnemonic",
+            "imageGen": "A prompt with proper context to generate the best possible relevant image to help learn the word. Try to relate it to the previous mnemonic",
             }
             Make sure the response is valid JSON that can be parsed with JSON.parse().
             And don't provide any of these words:
@@ -65,7 +67,7 @@ async function geminiText(exclusions, apiKey) {
         systemInstruction: `You are a vocabulary expert that helps people learn new words. Provide accurate and educational word details in the specified JSON format.`
     };
     const model = 'gemini-2.0-flash';
-    // const model = 'gemini-2.5-flash-preview-05-20';
+    // const model = 'gemini-2.5-flash-preview-04-17';
     const contents = [
         {
             role: 'user',
@@ -102,7 +104,18 @@ export async function POST(req) {
     try {
         const body = await req.json();
         // resend();
-        const wordData = await geminiText(body.usedWords, body.apiKey);
+
+        let textData = "";
+
+        if (body.type === "random123") {
+            textData += "Generate a new random word with its details"
+        }
+        else{
+            textData += `Help me understand the word "${body.type}" by providing its details`
+            body.usedWords = ""
+        }
+        
+        const wordData = await geminiText(body.usedWords, body.apiKey, body.type);
         console.log(wordData)
 
         return NextResponse.json({
