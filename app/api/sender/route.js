@@ -32,7 +32,7 @@ import 'dotenv/config'; // To access the env. Var (It works)
 
 async function geminiText(exclusions, apiKey, type) {
     let responseText = '';
-
+    
     let format = `${type} in the following JSON format:
             {
             "word": "The word",
@@ -99,11 +99,11 @@ async function geminiText(exclusions, apiKey, type) {
 
 
 
-
 export async function POST(req) {
     try {
         const body = await req.json();
         // resend();
+        console.log("The body is", body)
 
         let textData = "";
 
@@ -116,7 +116,7 @@ export async function POST(req) {
         }
         
         const wordData = await geminiText(body.usedWords, body.apiKey, body.type);
-        console.log(wordData)
+        // console.log(wordData)
 
         return NextResponse.json({
             success: true,
