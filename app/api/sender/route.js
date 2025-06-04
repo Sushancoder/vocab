@@ -1,29 +1,9 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from "@google/genai";
-import { Resend } from 'resend';
 import mime from 'mime';
 import { writeFile } from 'fs';
 import 'dotenv/config'; // To access the env. Var (It works)
 
-
-// Resend Email Sending Function:
-// const resend = async () => {
-//     const resend = new Resend(process.env.RESEND_API_KEY);
-
-//     const { data, error } = await resend.emails.send({
-//         from: 'onboarding@resend.dev',
-//         to: 'vigorous@freethecookies.com',
-//         subject: 'Hello World',
-//         html: '<p>Congrats on sending your <strong>first email</strong>!</p>'
-//     });
-
-//     if (error) {
-//         console.error('Resend error:', error);
-//         throw error;
-//     }
-
-//     return data;
-// }
 
 
 // Gemini Text Response Function:
@@ -102,7 +82,6 @@ async function geminiText(exclusions, apiKey, type) {
 export async function POST(req) {
     try {
         const body = await req.json();
-        // resend();
         console.log("The body is", body)
 
         let textData = "";
