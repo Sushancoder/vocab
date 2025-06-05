@@ -137,9 +137,9 @@ export default function VocabularyApp() {
 
       const wordDataReceived = data.data[0];
       setWordData(wordDataReceived);
-      if (type == "random123") {
+      // if (type == "random123") {
         newUsedWords(wordDataReceived.word);
-      }
+      // }
 
       return wordDataReceived;
     } catch (error) {

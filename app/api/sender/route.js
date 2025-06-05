@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from "@google/genai";
-import mime from 'mime';
-import { writeFile } from 'fs';
+// import mime from 'mime';
+// import { writeFile } from 'fs';
 import 'dotenv/config'; // To access the env. Var (It works)
 
 
