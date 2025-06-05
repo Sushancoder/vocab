@@ -40,7 +40,7 @@ export default function VocabularyApp() {
   });
 
   const freeTrialWord = () => {
-    if (!apiKey) {
+    // if (!apiKey) {
       setShowWord(true);
       setWordData({
         word: "Serendipity",
@@ -59,16 +59,16 @@ export default function VocabularyApp() {
         origin:
           "First known use in 1754, derived from 'Serendip', an old name for Sri Lanka, combined with the suffix '-ity'.",
         mnemonic:
-          "Imagine tripping (accidentally) and discovering a 'dip' of gold. This happy accident represents serendipity.",
-        imageGen: " ",
+          "Think of a prince from a Persian fairy tale stumbling upon a hidden treasure chest filled with gold and jewels, while seemingly lost in an enchanted forest. The scene should evoke a sense of wonder and unexpected fortune.",
+        imageGen:
+          "A prince from a Persian fairy tale stumbling upon a hidden treasure chest filled with gold and jewels, while seemingly lost in an enchanted forest. The scene should evoke a sense of wonder and unexpected fortune.",
         imageUrl: "/serendipity_image.png",
       });
-    }
+    // }
   };
 
   // Set client flag and initialize from localStorage
   useEffect(() => {
-    freeTrialWord();
     setIsClient(true);
 
     // Initialize used words from localStorage
@@ -80,7 +80,17 @@ export default function VocabularyApp() {
         console.warn("Failed to parse usedWords from localStorage", e);
       }
     }
-  }, []);
+
+    
+    // Check if API key exists in localStorage
+    const storedApiKey = window.localStorage.getItem("apiKey");
+    
+    // Only show free trial word if no API key is stored
+    if (!storedApiKey) {
+      freeTrialWord();
+    }
+  }, []); // Run only once on mount
+  
 
   // Show loading state until client-side initialization is complete
   if (!isClient) {
@@ -209,14 +219,16 @@ export default function VocabularyApp() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-2 sm:p-4 md:p-6 flex flex-col md:flex-row overflow-hidden relative">
       {/* Desktop API Key Manager */}
-      <div className={`${!apiKey ? "block" : "md:block"} hidden md:w-4/12 mb-4`}>
+      <div
+        className={` ${!apiKey ? "block" : "md:block hidden"} md:w-4/12 mb-4`}
+      >
         <ApiKeyManager onApiKeyChange={setApiKey} />
       </div>
 
-      <div className="w-full md:w-6/12 mx-auto h-[80vh] md:h-[90vh] overflow-y-auto pb-8 px-2 pt-2">
+      <div className="w-full md:w-6/12 mx-auto h-[90vh] md:h-[90vh] overflow-y-auto pb-8 px-2 pt-2">
         <div className="flex items-center justify-between">
           {/* Mobile Menu Component */}
-          <MobileMenu 
+          <MobileMenu
             apiKey={apiKey}
             onApiKeyChange={setApiKey}
             isMenuOpen={isMenuOpen}

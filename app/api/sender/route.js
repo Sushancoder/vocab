@@ -82,7 +82,7 @@ async function geminiText(exclusions, apiKey, type) {
 export async function POST(req) {
     try {
         const body = await req.json();
-        console.log("The body is", body)
+        // console.log("The body is", body)
 
         let textData = "";
 

@@ -44,6 +44,9 @@ export default function MobileMenu({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4">
+              <div className="text-2xl md:text-3xl font-bold text-center text-blue-800 mb-4 md:mb-8 flex-grow">
+                Features
+              </div>
               <button
                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
                 onClick={onMenuToggle}
@@ -63,9 +66,10 @@ export default function MobileMenu({
                   />
                 </svg>
               </button>
-              <div className="pt-8">
+              <div className="pt-4">
                 <ApiKeyManager onApiKeyChange={onApiKeyChange} />
               </div>
+              
             </div>
           </div>
         </div>
