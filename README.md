@@ -21,7 +21,7 @@ A modern web application that helps you learn new words with visual aids and mne
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd emailer
+   cd vocab
    ```
 
 2. Install dependencies:
@@ -70,7 +70,7 @@ A modern web application that helps you learn new words with visual aids and mne
 ## Built With
 
 - [Next.js](https://nextjs.org/) - React framework
-- [Google Gemini API](https://ai.google.dev/) - For AI text and image generation
+- [Google Gemini API](https://aistudio.google.com/) - For AI text and image generation
 - [Tailwind CSS](https://tailwindcss.com/) - For styling
 
 ## License
