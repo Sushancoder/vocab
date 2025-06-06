@@ -100,6 +100,9 @@ export default function VocabularyApp() {
   // Save new words to localstorage
   const newUsedWords = (newword) => {
     if (typeof window === "undefined") return;
+    
+    // Check if the word already exists in the usedWords array
+    if (usedWords && usedWords.includes(newword)) return;
 
     const updatedWords = usedWords ? [...usedWords, newword] : [newword];
     setUsedWords(updatedWords);
