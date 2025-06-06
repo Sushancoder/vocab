@@ -216,6 +216,13 @@ export default function VocabularyApp() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const showAPIKeyIssue = () => {
+    if (!apiKey) {
+      toast.error("Add an API key to learn unlimited words for free.");
+      return;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-2 sm:p-4 md:p-6 flex flex-col md:flex-row overflow-hidden relative">
       {/* Desktop API Key Manager */}
@@ -225,7 +232,7 @@ export default function VocabularyApp() {
         <ApiKeyManager onApiKeyChange={setApiKey} />
       </div>
 
-      <div className="w-full md:w-6/12 mx-auto h-[90vh] md:h-[90vh] overflow-y-auto pb-8 px-2 pt-2">
+      <div className="w-full md:w-6/12 mx-auto h-[95vh] md:h-[95vh] overflow-y-auto pb-8 px-2 pt-2">
         <div className="flex items-center justify-between">
           {/* Mobile Menu Component */}
           <MobileMenu
@@ -249,7 +256,7 @@ export default function VocabularyApp() {
           />
         </div>
 
-        <div className="text-center mb-8 flex flex-wrap justify-center gap-3">
+        <div className="text-center mb-8 flex flex-wrap justify-center gap-3" onMouseEnter={() => showAPIKeyIssue()}>
           <button
             onClick={() => handleNewWord("random123")}
             disabled={isSending || !apiKey}
