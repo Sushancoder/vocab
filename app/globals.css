@@ -5,6 +5,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --transition-smooth: 800ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 1000ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,5 +69,40 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+/* Transition classes */
+.transition-smooth {
+  transition: all var(--transition-smooth);
+}
+
+.transition-bounce {
+  transition: all var(--transition-bounce);
+}
+
+.scale-hover {
+  transition: transform var(--transition-bounce);
+}
+
+.scale-hover:hover {
+  transform: scale(1);
+}
+
+.grow-transition {
+  transition: all var(--transition-smooth);
+  transform-origin: center;
+}
+
+.explanation-transition {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity var(--transition-smooth),
+              max-height var(--transition-smooth);
+}
+
+.explanation-transition.show {
+  opacity: 1;
+  max-height: 2000px; /* Arbitrary large height */
 }
 

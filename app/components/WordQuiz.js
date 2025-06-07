@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 export default function WordQuiz({ 
     wordData, 
@@ -9,10 +10,17 @@ export default function WordQuiz({
     onOptionSelect, 
     isSending 
 }) {
+    const [animationClass, setAnimationClass] = useState('');
+
+    // Apply animation class when showExplanation changes
+    useEffect(() => {
+        setAnimationClass(showExplanation ? 'show' : '');
+    }, [showExplanation]);
+
     if (!wordData) return null;
 
     return (
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fade-in border-2 border-blue-200 shadow-blue-300">
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fade-in border-2 border-blue-200 shadow-blue-300 grow-transition">
             {!isSending && (
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                     {wordData.word}
@@ -29,7 +37,7 @@ export default function WordQuiz({
                                     <button
                                         key={index}
                                         onClick={() => onOptionSelect(synonym)}
-                                        className="w-full text-left p-4 border-2 border-gray-200 text-gray-600 rounded-lg hover:border-blue-400 transition-colors duration-200"
+                                        className="w-full text-left p-4 border-2 border-gray-200 text-gray-600 rounded-lg hover:border-blue-400 transition-colors duration-200 scale-hover"
                                     >
                                         {synonym}
                                     </button>
@@ -43,8 +51,8 @@ export default function WordQuiz({
                     )}
                 </div>
             ) : (
-                <div className="space-y-6">
-                    <div className={`p-4 rounded-lg ${selectedOption === wordData.correctSynonym ? 'bg-green-50 border border-green-200 text-green-600' : 'bg-red-50 border border-red-200 text-red-600'}`}>
+                <div className={`space-y-6 explanation-transition ${animationClass}`}>
+                    <div className={`p-4 rounded-lg transition-smooth ${selectedOption === wordData.correctSynonym ? 'bg-green-50 border border-green-200 text-green-600' : 'bg-red-50 border border-red-200 text-red-600'}`}>
                         <div className="font-medium">
                             {selectedOption === wordData.correctSynonym ? '✓ Correct!' : '✗ Incorrect!'}
                             <p className="text-gray-700">
@@ -82,13 +90,13 @@ export default function WordQuiz({
                             <p className="text-gray-600 italic">"{wordData.mnemonic}"</p>
                         </div>
 
-                        <div className="relative flex items-center justify-center h-full w-full rounded-lg overflow-hidden mt-4">
+                        <div className="relative flex items-center justify-center h-full w-full rounded-lg overflow-hidden mt-4 transition-smooth">
                             <Image
                                 src={wordData.imageUrl || '/Spinner@1x-1.0s-200px-200px.gif'}
                                 alt={wordData.word}
                                 height={500}
                                 width={500}
-                                className="object-cover border-2 border-green-200 rounded-lg"
+                                className="object-cover border-2 border-green-200 rounded-lg transition-bounce"
                             />
                         </div>
                     </div>
