@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from "@google/genai";
-// import mime from 'mime';
-// import { writeFile } from 'fs';
-import 'dotenv/config'; // To access the env. Var (It works)
+import 'dotenv/config';
 
 
 
@@ -47,7 +45,7 @@ async function geminiText(exclusions, apiKey, type) {
         systemInstruction: `You are a vocabulary expert that helps people learn new words. Provide accurate and educational word details in the specified JSON format.`
     };
     const model = 'gemini-2.0-flash';
-    // const model = 'gemini-2.5-flash-preview-04-17';
+    // const model = 'gemini-2.5-flash-lite';
     const contents = [
         {
             role: 'user',

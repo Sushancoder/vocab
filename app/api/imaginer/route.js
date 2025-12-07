@@ -1,21 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from "@google/genai";
 import mime from 'mime';
-// import { fstat, writeFile } from 'fs';
 import 'dotenv/config';
-
-
-// For Image Generation Function:
-
-// function saveBinaryFile(fileName, content) {
-//     writeFile(fileName, content, 'utf8', (err) => {
-//         if (err) {
-//             console.error(`Error writing file ${fileName}:`, err);
-//             return;
-//         }
-//         console.log(`File ${fileName} saved to file system.`);
-//     });
-// }
 
 
 async function geminiImage(prompt, apiKey) {
@@ -57,11 +43,8 @@ async function geminiImage(prompt, apiKey) {
         if (chunk.candidates[0].content.parts[0].inlineData) {
             const fileName = 'image';
             const inlineData = chunk.candidates[0].content.parts[0].inlineData;
-            // console.log(inlineData)
             const fileExtension = mime.getExtension(inlineData.mimeType || '');
             const buffer = Buffer.from(inlineData.data || '', 'base64');
-            // saveBinaryFile(`${fileName}.${fileExtension}`, buffer);
-            // console.log(`File data:image/png;base64,${inlineData.data} saved to file system.`);
             return `data:image/png;base64,${inlineData.data}`;
         }
         else {
