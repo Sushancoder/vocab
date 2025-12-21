@@ -1,8 +1,11 @@
 import ApiKeyManager from "./ApiKeyManager";
+import AIModeToggle from "./AIModeToggle";
 
 export default function MobileMenu({
   apiKey,
   onApiKeyChange,
+  useAIMode,
+  onAIModeToggle,
   isMenuOpen,
   onMenuToggle,
 }) {
@@ -68,8 +71,13 @@ export default function MobileMenu({
               </button>
               <div className="pt-4">
                 <ApiKeyManager onApiKeyChange={onApiKeyChange} />
+                <AIModeToggle
+                  useAIMode={useAIMode}
+                  onToggle={onAIModeToggle}
+                  hasApiKey={!!apiKey}
+                />
               </div>
-              
+
             </div>
           </div>
         </div>

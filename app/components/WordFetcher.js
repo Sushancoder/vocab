@@ -1,11 +1,11 @@
-async function WordFetcher({ usedWords, apiKey, type }) {
+async function WordFetcher({ usedWords, apiKey, type, useAIMode }) {
   try {
     const response = await fetch("/api/sender", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ usedWords, apiKey, type }),
+      body: JSON.stringify({ usedWords, apiKey, type, useAIMode }),
     });
     const data = await response.json();
 

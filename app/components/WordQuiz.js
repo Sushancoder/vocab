@@ -1,14 +1,14 @@
 'use client';
 
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import PronunciationButton from "./PronunciationButton";
 
-export default function WordQuiz({ 
-    wordData, 
-    showExplanation, 
-    selectedOption, 
-    onOptionSelect, 
-    isSending 
+export default function WordQuiz({
+    wordData,
+    showExplanation,
+    selectedOption,
+    onOptionSelect,
+    isSending
 }) {
     const [animationClass, setAnimationClass] = useState('');
 
@@ -27,11 +27,17 @@ export default function WordQuiz({
                 </h2>
             )}
 
-            {!showExplanation ? (
+            {!showExplanation && isSending && (
+                <div className="flex items-center justify-center h-12">
+                    <p className="text-black animate-pulse">Loading your word...</p>
+                </div>
+            )}
+
+            {!showExplanation && !isSending && (
                 <div className="space-y-4">
-                    {!isSending ? (
+                    {wordData.synonyms && wordData.synonyms.length > 0 ? (
                         <>
-                            <p className="text-gray-600 text-center mb-6">Select the most appropriate synonym:</p>
+                            <p className="text-gray-600 text-center mb-6">Which of these is a synonym?</p>
                             <div className="space-y-3">
                                 {wordData.synonyms.map((synonym, index) => (
                                     <button
@@ -45,66 +51,78 @@ export default function WordQuiz({
                             </div>
                         </>
                     ) : (
-                        <div className="flex items-center justify-center h-12">
-                            <p className="text-black animate-pulse">Loading your word...</p>
+                        <div className="text-center">
+                            <p className="text-gray-500 mb-4 italic">Interactive quiz not available for this word.</p>
+                            <button
+                                onClick={() => onOptionSelect(null)} // null option triggers explanation view
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition-colors"
+                            >
+                                Reveal Definition
+                            </button>
                         </div>
                     )}
                 </div>
-            ) : (
+            )}
+
+            {showExplanation && (
                 <div className={`space-y-6 explanation-transition ${animationClass}`}>
-                    <div className={`p-4 rounded-lg transition-smooth ${selectedOption === wordData.correctSynonym ? 'bg-green-50 border border-green-200 text-green-600' : 'bg-red-50 border border-red-200 text-red-600'}`}>
-                        <div className="font-medium">
-                            {selectedOption === wordData.correctSynonym ? '✓ Correct!' : '✗ Incorrect!'}
-                            <p className="text-gray-700">
-                                <span className="font-semibold">Correct Answer:</span> {wordData.correctSynonym}
-                            </p>
+                    <div className={`p-4 rounded-lg transition-smooth ${!selectedOption ? 'bg-blue-50 border border-blue-200 text-blue-800' :
+                        selectedOption === wordData.correctSynonym ? 'bg-green-50 border border-green-200 text-green-600' : 'bg-red-50 border border-red-200 text-red-600'
+                        }`}>
+                        <div className="font-medium mb-2">
+                            {!selectedOption ? 'Definition Revealed' :
+                                selectedOption === wordData.correctSynonym ? '✓ Correct!' : '✗ Incorrect!'}
+
+                            {selectedOption && (
+                                <p className="text-gray-700 mt-1">
+                                    <span className="font-semibold">Correct Answer:</span> {wordData.correctSynonym}
+                                </p>
+                            )}
                         </div>
                         <p className="text-gray-700">
                             <span className="font-semibold">Definition:</span> {wordData.definition}
                         </p>
-                        <p className="text-gray-700">
-                            <span className="font-semibold">Pronunciation:</span> {wordData.pronunciation}
+                        <p className="text-gray-700 mt-1 flex items-center">
+                            <span className="font-semibold mr-1">Pronunciation:</span> {wordData.pronunciation}
+                            <PronunciationButton audioUrl={wordData.audio} />
                         </p>
                     </div>
 
                     <div className="space-y-4">
                         <div>
                             <h3 className="font-semibold text-gray-800">Etymology:</h3>
-                            <p className="text-gray-600">{wordData.etymology}</p>
+                            <p className={`text-gray-600 ${wordData.etymology?.includes("Use AI") ? "italic text-sm text-gray-400" : ""}`}>
+                                {wordData.etymology}
+                            </p>
                         </div>
 
                         <div>
                             <h3 className="font-semibold text-gray-800">Examples:</h3>
-                            {wordData.examples.map((example, index) => (
-                                <p key={index} className="text-gray-600">{example}</p>
-                            ))}
+                            {wordData.examples && wordData.examples.length > 0 ? (
+                                wordData.examples.map((example, index) => (
+                                    <p key={index} className="text-gray-600 mb-1">• {example}</p>
+                                ))
+                            ) : (
+                                <p className="text-gray-400 italic text-sm">No examples available</p>
+                            )}
                         </div>
 
                         <div>
                             <h3 className="font-semibold text-gray-800">Origin:</h3>
-                            <p className="text-gray-600">{wordData.origin}</p>
+                            <p className={`text-gray-600 ${wordData.origin?.includes("Use AI") ? "italic text-sm text-gray-400" : ""}`}>
+                                {wordData.origin}
+                            </p>
                         </div>
 
                         <div>
                             <h3 className="font-semibold text-gray-800">Mnemonic:</h3>
-                            <p className="text-gray-600 italic">"{wordData.mnemonic}"</p>
+                            <p className={`text-gray-600 ${wordData.mnemonic?.includes("Use AI") ? "italic text-sm text-gray-400" : "italic"}`}>
+                                "{wordData.mnemonic}"
+                            </p>
                         </div>
-
-                        <div className="relative flex items-center justify-center h-full w-full rounded-lg overflow-hidden mt-4 transition-smooth">
-                            <Image
-                                src={wordData.imageUrl || '/Spinner@1x-1.0s-200px-200px.gif'}
-                                alt={wordData.word}
-                                height={500}
-                                width={500}
-                                className="object-cover border-2 border-green-200 rounded-lg transition-bounce"
-                            />
-                        </div>
-                    </div>
-                    <div className="p-3 bg-white shadow-gray-400 rounded-t-lg text-xs font-thin text-black cursor-default">
-                        Sometimes AI art is quite abstract. Enjoy the surprises!
                     </div>
                 </div>
             )}
         </div>
     );
-} 
+}

@@ -55,12 +55,32 @@ body {
   /* thumb and track color */
 }
 
+/* Custom scrollbar utility class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(96, 165, 250, 0.1);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(96, 165, 250, 0.5);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -98,11 +118,11 @@ body {
   max-height: 0;
   overflow: hidden;
   transition: opacity var(--transition-smooth),
-              max-height var(--transition-smooth);
+    max-height var(--transition-smooth);
 }
 
 .explanation-transition.show {
   opacity: 1;
-  max-height: 2000px; /* Arbitrary large height */
+  max-height: 2000px;
+  /* Arbitrary large height */
 }
-

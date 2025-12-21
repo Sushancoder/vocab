@@ -1,33 +1,43 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
-
-
+import { wordSchema } from '@/lib/schemas';
+import {
+    findWordWithSynonym,
+    fetchDictionaryWord,
+    transformDictionaryData
+} from '@/lib/dictionary-helper';
+import { getAudioUrl } from '@/lib/audioExtractor';
 
 // Gemini Text Response Function:
+const jsonSchema = {
+    type: 'OBJECT',
+    properties: {
+        word: { type: 'STRING', description: "The word" },
+        definition: { type: 'STRING', description: "Clear and coherent definition, 2 definitions distincted with or." },
+        pronunciation: { type: 'STRING', description: "The pronunciation of the word" },
+        synonyms: {
+            type: 'ARRAY',
+            items: { type: 'STRING' },
+            minItems: 3,
+            maxItems: 3,
+            description: "3 plausible synonyms out of which one is the correct synonym"
+        },
+        correctSynonym: { type: 'STRING', description: "one of the correct synonyms" },
+        etymology: { type: 'STRING', description: "Brief etymology of the word" },
+        examples: {
+            type: 'ARRAY',
+            items: { type: 'STRING' },
+            description: "3 examples using the word"
+        },
+        origin: { type: 'STRING', description: "Historical origin and first known use" },
+        mnemonic: { type: 'STRING', description: "A helpful mnemonic to remember the word" },
+    },
+    required: ["word", "definition", "pronunciation", "synonyms", "correctSynonym", "etymology", "examples", "origin", "mnemonic"],
+};
 
-// certain: Help me understand the word "Given" by providing its details
 
 async function geminiText(exclusions, apiKey, type) {
-    let responseText = '';
-    
-    let format = `${type} in the following JSON format:
-            {
-            "word": "The word",
-            "definition": "Clear and coherent definition, 2 definitions distincted with or.",
-            "pronunciation": "The pronunciation of the word",
-            "synonyms": ["this array hold 3 plausible synonyms out of which one is the correct synonym", "Synonym2", "Synonym3"],
-            "correctSynonym": "one of the correct synonyms",
-            "etymology": "Brief etymology of the word",
-            "examples": ["Example1", "Example2", "Example3"],
-            "origin": "Historical origin and first known use",
-            "mnemonic": "A helpful mnemonic to remember the word",
-            "imageGen": "A prompt with proper context to generate the best possible relevant image to help learn the word. Try to relate it to the previous mnemonic",
-            }
-            Make sure the response is valid JSON that can be parsed with JSON.parse().
-            And don't provide any of these words:
-            ${exclusions}
-    `
     if (!apiKey) {
         throw new Error('GEMINI_API_KEY is missing');
     }
@@ -35,23 +45,25 @@ async function geminiText(exclusions, apiKey, type) {
     const ai = new GoogleGenAI({
         apiKey: apiKey,
     });
-    const tools = [
-        // { googleSearch: `${format}` },
-    ];
 
     const config = {
-        // responseMimeType: 'text/plain',
         responseMimeType: 'application/json',
-        systemInstruction: `You are a vocabulary expert that helps people learn new words. Provide accurate and educational word details in the specified JSON format.`
+        responseSchema: jsonSchema,
+        systemInstruction: `You are a vocabulary expert that helps people learn new words. Provide accurate and educational word details.`
     };
-    const model = 'gemini-2.0-flash';
-    // const model = 'gemini-2.5-flash-lite';
+
+    const model = 'models/gemini-2.5-flash';
+
+    const prompt = `${type}.
+    Make sure to response with valid JSON matching the schema.
+    And don't provide any of these words: ${exclusions}`;
+
     const contents = [
         {
             role: 'user',
             parts: [
                 {
-                    text: `${format}`,
+                    text: prompt,
                 },
             ],
         },
@@ -62,38 +74,92 @@ async function geminiText(exclusions, apiKey, type) {
         config,
         contents,
     });
+
+    let responseText = '';
     for await (const chunk of response) {
-        // console.log(chunk.text);
         responseText += chunk.text;
     }
 
     try {
-        return JSON.parse(responseText);
+        const parsed = JSON.parse(responseText);
+        // Validate with Zod
+        return wordSchema.parse(parsed);
     } catch (error) {
-        console.error('Failed to parse API response:', error);
+        console.error('Failed to parse or validate API response:', error);
+        if (error.errors) {
+            console.error('Zod Validation Errors:', JSON.stringify(error.errors, null, 2));
+        }
         throw new Error('Received invalid JSON response from the API');
     }
 }
+
+// Handle Dictionary API requests
+async function handleDictionaryAPIRequest(type, usedWords) {
+    if (type === "random123") {
+        // Random word mode with optimization
+        const usedWordsArray = Array.isArray(usedWords) ? usedWords.map(w => w.toLowerCase()) : [];
+        const { mainWord, dictData, distractorWords, definitionOnly } = await findWordWithSynonym(usedWordsArray);
+
+        // Transform data
+        return transformDictionaryData(
+            dictData,
+            definitionOnly ? [] : distractorWords
+        );
+    } else {
+        // Specific word search
+        const dictData = await fetchDictionaryWord(type);
+
+        if (!dictData) {
+            // Word not found in dictionary
+            const error = new Error('Definition not available for this word');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        // Use empty array for distractors as we can't easily generate valid quiz 
+        // for a specific searched word without finding related words
+        return transformDictionaryData(dictData, []);
+    }
+}
+
 
 
 
 export async function POST(req) {
     try {
         const body = await req.json();
-        // console.log("The body is", body)
+        const { apiKey, type, usedWords, useAIMode } = body;
 
-        let textData = "";
+        // Logic flow:
+        // 1. If useAIMode is explicitly true AND apiKey exists -> Use Gemini
+        // 2. Default fallback -> Use Dictionary API
+        const shouldUseAI = useAIMode === true && !!apiKey;
 
-        if (body.type === "random123") {
-            textData += "Generate a new random word with its details"
+        let wordData;
+
+        if (shouldUseAI) {
+            let textData = "";
+            if (type === "random123") {
+                textData += "Generate a new random word with its details"
+            } else {
+                textData += `Help me understand the word "${type}" by providing its details`
+                // body.usedWords = "" // Not needed to modify body
+            }
+
+            // Pass empty string for usedWords if specific search
+            const exclusions = type === "random123" ? usedWords : "";
+            wordData = await geminiText(exclusions, apiKey, type === "random123" ? textData : type);
+
+            // Fetch audio URL from Dictionary API for AI-generated word
+            const dictData = await fetchDictionaryWord(wordData.word);
+            if (dictData) {
+                wordData.audio = getAudioUrl(dictData);
+            }
+        } else {
+            // Use Dictionary API
+            console.log("Using Dictionary API fallback");
+            wordData = await handleDictionaryAPIRequest(type, usedWords);
         }
-        else{
-            textData += `Help me understand the word "${body.type}" by providing its details`
-            body.usedWords = ""
-        }
-        
-        const wordData = await geminiText(body.usedWords, body.apiKey, body.type);
-        // console.log(wordData)
 
         return NextResponse.json({
             success: true,
@@ -103,9 +169,13 @@ export async function POST(req) {
 
     } catch (error) {
         console.error("Error generating word:", error);
+
+        const status = error.statusCode || 500;
+        const message = error.message || 'Failed to generate word';
+
         return NextResponse.json(
-            { success: false, error: 'Failed to generate word' },
-            { status: 500 }
+            { success: false, error: message },
+            { status: status }
         );
     }
 }
