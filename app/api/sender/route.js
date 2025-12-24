@@ -5,7 +5,8 @@ import { wordSchema } from '@/lib/schemas';
 import {
     findWordWithSynonym,
     fetchDictionaryWord,
-    transformDictionaryData
+    transformDictionaryData,
+    shuffleArray
 } from '@/lib/dictionary-helper';
 import { getAudioUrl } from '@/lib/audioExtractor';
 
@@ -149,6 +150,11 @@ export async function POST(req) {
             // Pass empty string for usedWords if specific search
             const exclusions = type === "random123" ? usedWords : "";
             wordData = await geminiText(exclusions, apiKey, type === "random123" ? textData : type);
+
+            // Shuffle synonyms from Gemini
+            if (wordData.synonyms) {
+                wordData.synonyms = shuffleArray(wordData.synonyms);
+            }
 
             // Fetch audio URL from Dictionary API for AI-generated word
             const dictData = await fetchDictionaryWord(wordData.word);
