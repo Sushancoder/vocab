@@ -48,14 +48,6 @@ export default function Page() {
     }
   }, []);
 
-  // Reset request count when API key is added
-  useEffect(() => {
-    if (apiKey) {
-      setreqcount(0);
-      window.localStorage.setItem("reqcount", "0");
-    }
-  }, [apiKey]);
-
   const [error, setError] = useState(null);
 
   const { messages, sendMessage, status } = useChat({
