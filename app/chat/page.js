@@ -141,7 +141,7 @@ export default function Page() {
               <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
                 <Image src="/send-arrow.svg" alt="Chat" width={32} height={32} className="invert" />
               </div>
-              <p className="text-xl md:text-2xl font-semibold text-gray-700">How can I help you today?</p>
+              <p className="text-xl md:text-2xl font-semibold text-gray-700">What's on your mind?</p>
             </div>
           )}
 
