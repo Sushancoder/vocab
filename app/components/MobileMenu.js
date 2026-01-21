@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import ApiKeyManager from "./ApiKeyManager";
 import AIModeToggle from "./AIModeToggle";
 
@@ -9,6 +12,9 @@ export default function MobileMenu({
   isMenuOpen,
   onMenuToggle,
 }) {
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+
   return (
     <>
       {/* Show full width API Key Manager when no API key exists */}
@@ -71,11 +77,13 @@ export default function MobileMenu({
               </button>
               <div className="pt-4">
                 <ApiKeyManager onApiKeyChange={onApiKeyChange} />
-                <AIModeToggle
-                  useAIMode={useAIMode}
-                  onToggle={onAIModeToggle}
-                  hasApiKey={!!apiKey}
-                />
+                {isHomePage && (
+                  <AIModeToggle
+                    useAIMode={useAIMode}
+                    onToggle={onAIModeToggle}
+                    hasApiKey={!!apiKey}
+                  />
+                )}
               </div>
 
             </div>

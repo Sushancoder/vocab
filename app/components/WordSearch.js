@@ -23,13 +23,13 @@ export default function WordSearch({ onSearch, isDisabled }) {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Search for a word..."
-                        className="px-4 py-2 border border-gray-300 rounded-l-full focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black"
+                        className="px-4 py-3 border border-gray-300 rounded-l-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black"
                         autoFocus
                     />
                     <button
                         type="submit"
                         disabled={isDisabled || !searchTerm.trim()}
-                        className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-r-full transition-colors ${
+                        className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-r-2xl transition-colors ${
                             isDisabled || !searchTerm.trim() ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
                     >
@@ -48,7 +48,7 @@ export default function WordSearch({ onSearch, isDisabled }) {
                 <button
                     onClick={() => setShowSearch(true)}
                     disabled={isDisabled}
-                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform ${
+                    className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-4 px-6 rounded-2xl shadow-lg transition-all duration-300 transform ${
                         isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:scale-105'
                     }`}
                 >

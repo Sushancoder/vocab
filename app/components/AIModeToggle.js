@@ -1,7 +1,7 @@
 
 export default function AIModeToggle({ useAIMode, onToggle, hasApiKey }) {
     return (
-        <div className="mt-4 p-4 bg-white rounded-lg shadow-md border-t-2 border-blue-400">
+        <div className="my-5 p-4 bg-white rounded-lg shadow-md border-t-2 border-blue-400">
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="font-semibold text-gray-800">AI Mode: For better results</h3>

@@ -9,6 +9,7 @@ import WordSearch from "./components/WordSearch";
 import MobileMenu from "./components/MobileMenu";
 import RightSidebar from "./components/RightSidebar";
 import LeftSidebar from "./components/LeftSidebar";
+import Image from "next/image";
 
 export default function VocabularyApp() {
   // State for client-side rendering
@@ -223,7 +224,7 @@ export default function VocabularyApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-2 sm:p-4 md:p-6 flex flex-col md:flex-row overflow-hidden relative">
+    <div className="h-screen bg-slate-50 flex flex-col md:flex-row overflow-hidden relative">
       {/* Left Sidebar - API Key Manager */}
       <LeftSidebar
         apiKey={apiKey}
@@ -232,77 +233,92 @@ export default function VocabularyApp() {
         onAIModeToggle={handleAIModeToggle}
       />
 
-      <div className="w-full md:w-6/12 mx-auto h-[95vh] md:h-[95vh] overflow-y-auto pb-8 px-2 pt-2">
-        <div className="flex items-center justify-between">
-          {/* Mobile Menu Component */}
-          <MobileMenu
-            apiKey={apiKey}
-            onApiKeyChange={setApiKey}
-            useAIMode={useAIMode}
-            onAIModeToggle={handleAIModeToggle}
-            isMenuOpen={isMenuOpen}
-            onMenuToggle={toggleMenu}
-          />
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-full relative min-w-0 overflow-y-auto">
+        <div className="w-full max-w-5xl mx-auto px-4 md:px-8 py-6">
+          {/* Header Section */}
+          <div className="flex items-center justify-between mb-8">
+            {/* Mobile Menu Component */}
+            <MobileMenu
+              apiKey={apiKey}
+              onApiKeyChange={setApiKey}
+              useAIMode={useAIMode}
+              onAIModeToggle={handleAIModeToggle}
+              isMenuOpen={isMenuOpen}
+              onMenuToggle={toggleMenu}
+            />
 
-          <div className="text-2xl md:text-3xl font-bold text-center text-blue-800 mb-4 md:mb-8 flex-grow">
-            {/* Vocabulary Builder */}
-            The-Vocab
+            <div className="text-2xl md:text-3xl font-bold text-center text-blue-800 mb-4 md:mb-1 flex-grow">
+              {/* Vocabulary Builder */}
+              The-Vocab
+            </div>
+
+            {/* Mobile-only WordHistory (three-dot menu) */}
+            <div className="md:hidden">
+              <WordHistory
+                showWords={showWords}
+                setShowWords={setShowWords}
+                usedWords={usedWords}
+                onWordSelect={handleNewWord}
+                onWordDelete={deleteWord}
+                isSending={isSending}
+              />
+            </div>
           </div>
 
-          {/* Mobile-only WordHistory (three-dot menu) */}
-          <div className="md:hidden">
-            <WordHistory
-              showWords={showWords}
-              setShowWords={setShowWords}
-              usedWords={usedWords}
-              onWordSelect={handleNewWord}
-              onWordDelete={deleteWord}
-              isSending={isSending}
+          {/* Action Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mb-10" onMouseEnter={() => showAPIKeyIssue()}>
+            <button
+              onClick={() => handleNewWord("random123")}
+              disabled={isSending || (useAIMode && !apiKey)}
+              className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform 
+                  ${isSending || (useAIMode && !apiKey) ? "cursor-not-allowed opacity-50" : "hover:scale-105 hover:-translate-y-0.5"}`}
+              title={`${useAIMode && !apiKey ? "Add API key" : ""}`}
+            >
+              {showWord ? "Get Another Word" : "Get New Word"}
+            </button>
+
+            <WordSearch
+              onSearch={handleNewWord}
+              isDisabled={isSending || (useAIMode && !apiKey)}
             />
           </div>
+
+          {/* Word Quiz Content */}
+          {showWord && (
+            <WordQuiz
+              wordData={wordData}
+              showExplanation={showExplanation}
+              selectedOption={selectedOption}
+              onOptionSelect={handleOptionSelect}
+              isSending={isSending}
+            />
+          )}
+
+          {/* Empty State */}
+          {!showWord && (
+            <div className="flex flex-col items-center justify-center text-gray-400 mt-20 animate-in fade-in duration-500">
+              <div className="w-20 h-20 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <Image src="/book-open.svg" alt="Learn" width={40} height={40} className="invert brightness-0" />
+              </div>
+              <p className="text-xl md:text-2xl font-semibold text-gray-700 mb-2">Ready to expand your vocabulary?</p>
+              <p className="text-sm text-gray-500">Click the button above to start learning new words!</p>
+            </div>
+          )}
         </div>
-
-        <div className="text-center mb-8 flex flex-wrap justify-center gap-3" onMouseEnter={() => showAPIKeyIssue()}>
-          <button
-            onClick={() => handleNewWord("random123")}
-            disabled={isSending || (useAIMode && !apiKey)}
-            className={`bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform 
-                ${isSending || (useAIMode && !apiKey) ? "cursor-not-allowed opacity-50" : "hover:scale-105"}`}
-            title={`${useAIMode && !apiKey ? "Add API key" : ""}`}
-          >
-            {showWord ? "Get Another Word" : "Get New Word"}
-          </button>
-
-          <WordSearch
-            onSearch={handleNewWord}
-            isDisabled={isSending || (useAIMode && !apiKey)}
-          />
-        </div>
-
-        {showWord && (
-          <WordQuiz
-            wordData={wordData}
-            showExplanation={showExplanation}
-            selectedOption={selectedOption}
-            onOptionSelect={handleOptionSelect}
-            isSending={isSending}
-          />
-        )}
-
-        {!showWord && (
-          <div className="text-center text-gray-500 mt-12">
-            <p>Click the button above to start learning new words!</p>
-          </div>
-        )}
       </div>
 
+
+
       {/* Desktop Right Sidebar */}
-      <RightSidebar
-        usedWords={usedWords}
-        onWordSelect={handleNewWord}
-        onWordDelete={deleteWord}
-        isSending={isSending}
-      />
+      <div className="hidden md:block overflow-x-hidden">
+        <RightSidebar
+          usedWords={usedWords}
+          onWordSelect={handleNewWord}
+          onWordDelete={deleteWord}
+          isSending={isSending}
+        />
+      </div>
     </div>
   );
 }
