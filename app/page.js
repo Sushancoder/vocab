@@ -5,8 +5,7 @@ import toast from "react-hot-toast";
 import WordFetcher from "./components/WordFetcher";
 import WordQuiz from "./components/WordQuiz";
 import WordHistory from "./components/WordHistory";
-import WordSearch from "./components/WordSearch";
-import MobileMenu from "./components/MobileMenu";
+import WordSearch from "./components/WordSearch"; 
 import RightSidebar from "./components/RightSidebar";
 import LeftSidebar from "./components/LeftSidebar";
 import Image from "next/image";
@@ -239,14 +238,7 @@ export default function VocabularyApp() {
           {/* Header Section */}
           <div className="flex items-center justify-between mb-8">
             {/* Mobile Menu Component */}
-            <MobileMenu
-              apiKey={apiKey}
-              onApiKeyChange={setApiKey}
-              useAIMode={useAIMode}
-              onAIModeToggle={handleAIModeToggle}
-              isMenuOpen={isMenuOpen}
-              onMenuToggle={toggleMenu}
-            />
+
 
             <div className="text-2xl md:text-3xl font-bold text-center text-blue-800 mb-4 md:mb-1 flex-grow">
               {/* Vocabulary Builder */}
