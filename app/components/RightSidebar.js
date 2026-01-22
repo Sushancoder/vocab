@@ -48,16 +48,23 @@ export default function RightSidebar({
                                 key={index}
                                 className="p-1 bg-white hover:bg-blue-50 border-b border-blue-100 flex justify-between items-center group transition-colors duration-200"
                             >
-                                <p
-                                    className="font-semibold text-gray-800 cursor-pointer hover:text-blue-600 transition-colors flex-1 p-4 break-all"
-                                    onClick={() => onWordSelect(word)}
+                                <div
+                                    className="flex-1 p-4 cursor-pointer"
+                                    onClick={() => onWordSelect(typeof word === 'string' ? word : word.word)}
                                     title="Click to view details"
                                 >
-                                    {word}
-                                </p>
+                                    <p className="font-semibold text-gray-800 break-all">
+                                        {typeof word === 'string' ? word : word.word}
+                                    </p>
+                                    {typeof word !== 'string' && word.synonym && (
+                                        <p className="text-xs text-gray-500 mt-1 italic">
+                                            {word.synonym}
+                                        </p>
+                                    )}
+                                </div>
                                 <button
                                     className="opacity-0 group-hover:opacity-100 transition-opacity duration-100 p-2 hover:bg-red-50 rounded-xl"
-                                    onClick={() => onWordDelete(word)}
+                                    onClick={() => onWordDelete(typeof word === 'string' ? word : word.word)}
                                     title="Delete word"
                                 >
                                     <img

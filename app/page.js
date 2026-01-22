@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import WordFetcher from "./components/WordFetcher";
 import WordQuiz from "./components/WordQuiz";
 import WordHistory from "./components/WordHistory";
-import WordSearch from "./components/WordSearch"; 
+import WordSearch from "./components/WordSearch";
 import RightSidebar from "./components/RightSidebar";
 import LeftSidebar from "./components/LeftSidebar";
 import Image from "next/image";
@@ -68,11 +68,16 @@ export default function VocabularyApp() {
   useEffect(() => {
     setIsClient(true);
 
-    // Initialize used words from localStorage
+    // Initialize usedWords from localStorage
     const storedUsedWords = window.localStorage.getItem("usedWords");
     if (storedUsedWords) {
       try {
-        setUsedWords(JSON.parse(storedUsedWords));
+        const parsedWords = JSON.parse(storedUsedWords);
+        // Migration check: if old format (strings), convert to objects
+        const formattedWords = parsedWords.map(item =>
+          typeof item === 'string' ? { word: item, synonym: '' } : item
+        );
+        setUsedWords(formattedWords);
       } catch (e) {
         console.warn("Failed to parse usedWords from localStorage", e);
       }
@@ -104,13 +109,14 @@ export default function VocabularyApp() {
   }
 
   // Save new words to localstorage
-  const newUsedWords = (newword) => {
+  const newUsedWords = (newWordObj) => {
     if (typeof window === "undefined") return;
 
     // Check if the word already exists in the usedWords array
-    if (usedWords && usedWords.includes(newword)) return;
+    // We compare either string (legacy) or object property
+    if (usedWords && usedWords.some(w => (typeof w === 'string' ? w : w.word) === newWordObj.word)) return;
 
-    const updatedWords = usedWords ? [...usedWords, newword] : [newword];
+    const updatedWords = usedWords ? [...usedWords, newWordObj] : [newWordObj];
     setUsedWords(updatedWords);
 
     try {
@@ -120,10 +126,10 @@ export default function VocabularyApp() {
     }
   };
 
-  const deleteWord = (word) => {
+  const deleteWord = (wordToDelete) => {
     if (typeof window === "undefined") return;
 
-    const updatedWords = usedWords.filter((w) => w !== word);
+    const updatedWords = usedWords.filter((w) => (typeof w === 'string' ? w : w.word) !== wordToDelete);
     setUsedWords(updatedWords);
 
     try {
@@ -146,10 +152,6 @@ export default function VocabularyApp() {
 
       const wordDataReceived = data.data;
       setWordData(wordDataReceived);
-      // if (type == "random123") {
-      newUsedWords(wordDataReceived.word);
-      // }
-
       return wordDataReceived;
     } catch (error) {
       console.error("Error in handleNewWord:", error);
@@ -195,6 +197,13 @@ export default function VocabularyApp() {
   const handleOptionSelect = async (option) => {
     setSelectedOption(option);
     setShowExplanation(true);
+
+    if (option === wordData.correctSynonym) {
+      newUsedWords({
+        word: wordData.word,
+        synonym: wordData.correctSynonym
+      });
+    }
   };
 
   const toggleMenu = () => {

@@ -42,22 +42,29 @@ export default function WordHistory({
           {usedWords.map((word, index) => (
             <div
               key={index}
-              className={`p-3 cursor-default bg-white overflow-y-hidden overscroll-x-auto hover:bg-gray-100 border-t-2 border-blue-400 flex justify-between`}
+              className={`p-3 cursor-default bg-white overflow-y-hidden overscroll-x-auto hover:bg-gray-100 border-t-2 border-blue-400 flex justify-between items-center`}
             >
-              <p
-                className="font-semibold cursor-pointer"
-                onClick={() => onWordSelect(word)}
+              <div
+                className="flex-1 cursor-pointer"
+                onClick={() => onWordSelect(typeof word === 'string' ? word : word.word)}
                 title="Know details"
               >
-                {word}
-              </p>
+                <p className="font-semibold">
+                  {typeof word === 'string' ? word : word.word}
+                </p>
+                {typeof word !== 'string' && word.synonym && (
+                  <p className="text-xs text-gray-500 italic">
+                    {word.synonym}
+                  </p>
+                )}
+              </div>
               <div className="flex items-center cursor-pointer" title="Delete">
                 <img
                   src="delete-2-svgrepo-com.svg"
                   width={30}
                   height={30}
                   alt="delete"
-                  onClick={() => onWordDelete(word)}
+                  onClick={() => onWordDelete(typeof word === 'string' ? word : word.word)}
                 />
               </div>
             </div>

@@ -1,11 +1,14 @@
 async function WordFetcher({ usedWords, apiKey, type, useAIMode }) {
   try {
+    // Verify and map usedWords to strings if necessary
+    const sanitizedUsedWords = usedWords.map(w => typeof w === 'string' ? w : w.word);
+
     const response = await fetch("/api/sender", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ usedWords, apiKey, type, useAIMode }),
+      body: JSON.stringify({ usedWords: sanitizedUsedWords, apiKey, type, useAIMode }),
     });
     const data = await response.json();
 
